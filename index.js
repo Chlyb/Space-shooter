@@ -27,8 +27,8 @@ io.sockets.on('connection',
     socket.on('p', //position
       function(data) {
         //console.log("pos");
-        socket.broadcast.emit('p', data);
-        //io.emit('p', data);
+        //socket.broadcast.emit('p', data);
+        io.emit('p', data);
       }
     );
 

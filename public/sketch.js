@@ -32,22 +32,38 @@ function setup() {
       let sh = ships.get(data.id);
       if(typeof sh === 'undefined'){
         sh = new Ship(data.x,data.y);
+        sh.usePseudoPos = true;
         ships.set(data.id, sh);
       }
       
       let timeDif = (currTime-data.time)/1000;
+
+      sh.pPos = sh.pos.copy();
+
       sh.serverUpdate(data);
       sh.move(timeDif);
+
+      sh.pVel = sh.pos.copy();
+      sh.pVel.sub(sh.pPos);
+      sh.pVel.div(0.1);
+      sh.timeToCompensationEnd = 0.1;
     }
   );
 
   socket.on('b', //bullet
     function(data) {
       let b = new Bullet(data.a, data.x, data.y, data.s, data.id);
-      bullets.set(data.s + data.id, b);
-      
       let timeDif = (currTime-data.t)/1000;
       b.move(timeDif);
+
+      b.usePseudoPos = true;   
+      b.pPos = ships.get(data.s).pos.copy();
+      b.pVel = b.pos.copy();
+      b.pVel.sub(b.pPos);
+      b.pVel.div(0.1);
+      b.timeToCompensationEnd = 0.1;
+
+      bullets.set(data.s + data.id, b);
     }
   );
 
@@ -85,23 +101,23 @@ function draw() {
   }
 
   if(typeof myShip !== "undefined") {
-    let c = myShip.input();
+    let changed = myShip.input();
     myShip.physics();
     myShip.move(dt);
     
     gi++;
-    if(gi%10 == 0 || c) {
+    if(gi%10 == 0 || changed) {
      myShip.sendData();
     }
     
     fill(255);
-    myShip.show(true);
+    myShip.show();
   }
 
   for(sh of ships.values()) {
     sh.move(dt);
     fill(0,255,255,255);
-    sh.show(true);
+    sh.show();
   }
 
   prevTime = currTime;

@@ -10,6 +10,11 @@ class Ship {
 
     this.hi = 0;
     this.vi = 0;
+
+    this.usePseudoPos = false;
+    this.pAngle = this.angle;
+    this.pPos = this.pos.copy();
+    this.timeToCompensationEnd = 0;
   }
 
   input() {
@@ -42,7 +47,7 @@ class Ship {
 
   shot() {
     let b = new Bullet(this.angle, this.pos.x, this.pos.y, myId, this.ammo);
-    //b.sendOnCreation();
+
     var data = {
       a: this.angle,
       x: this.pos.x,
@@ -74,6 +79,23 @@ class Ship {
     let ds = this.vel.copy();
     ds.mult(dt);
     this.pos.add(ds);
+
+    if(this.usePseudoPos) {
+      this.pAngle += (this.angle - this.pAngle)/4;
+
+      if(this.timeToCompensationEnd > 0) {
+        if(this.timeToCompensationEnd <= dt){
+          this.timeToCompensationEnd = 0;
+        }
+        else{
+          let dps = this.pVel.copy();
+          dps.mult(dt);
+          this.pPos.add(ds);
+          this.pPos.add(dps);
+          this.timeToCompensationEnd -= dt;
+        }
+      }
+    }
   }
 
   physics() {
@@ -101,13 +123,26 @@ class Ship {
 
   show() {
     noStroke();
-    let sin = Math.sin(this.angle);
-    let cos = Math.cos(this.angle);
-    triangle(this.pos.x + 10 * sin, this.pos.y + 10 * cos, this.pos.x - 4 * cos, this.pos.y + 4 * sin, this.pos.x + 4 * cos, this.pos.y - 4 * sin);
+
+    if(this.usePseudoPos){
+      var sin = Math.sin(this.pAngle);
+      var cos = Math.cos(this.pAngle);
+    }
+    else {
+      var sin = Math.sin(this.angle);
+      var cos = Math.cos(this.angle);
+    }
+
+    if(this.usePseudoPos && this.timeToCompensationEnd > 0) {
+      triangle(this.pPos.x + 10 * sin, this.pPos.y + 10 * cos, this.pPos.x - 4 * cos, this.pPos.y + 4 * sin, this.pPos.x + 4 * cos, this.pPos.y - 4 * sin);
+    }
+    else {
+      triangle(this.pos.x + 10 * sin, this.pos.y + 10 * cos, this.pos.x - 4 * cos, this.pos.y + 4 * sin, this.pos.x + 4 * cos, this.pos.y - 4 * sin);
+    }
   }
 
   serverUpdate(data) {
-    this.angle = data.angle;
+    this.angle = data.a;
     this.pos.x = data.x;
     this.pos.y = data.y;
     this.vel.x = data.vx;
@@ -119,7 +154,7 @@ class Ship {
 
   sendData() {
     var data = {
-      angle: this.angle,
+      a: this.angle,
       x: this.pos.x,
       y: this.pos.y,
       vx: this.vel.x,

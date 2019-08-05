@@ -6,6 +6,11 @@ class Bullet {
 
     this.shooter = shooter;
     this.id = id;
+
+    this.usePseudoPos = false;
+    this.pPos = this.pos.copy();
+    this.pVel = this.vel.copy();
+    this.timeToCompensationEnd = 0;
   }
 
   update() {
@@ -20,23 +25,33 @@ class Bullet {
     let ds = this.vel.copy();
     ds.mult(dt);
     this.pos.add(ds);
+
+    if(this.usePseudoPos && this.timeToCompensationEnd > 0) {
+      if(this.timeToCompensationEnd <= dt){
+        this.timeToCompensationEnd = 0;
+      }
+      else{
+        let dps = this.pVel.copy();
+        dps.mult(dt);
+        this.pPos.add(ds);
+        this.pPos.add(dps);
+        this.timeToCompensationEnd -= dt;
+      }
+    }
   }
 
   show() {
-    strokeWeight(5);
-    stroke(255,255,0);
-    point(this.pos.x, this.pos.y);
+    if(this.usePseudoPos && this.timeToCompensationEnd > 0) {
+      strokeWeight(5);
+      stroke(255,255,0);
+      point(this.pPos.x, this.pPos.y);
+    }
+    else {
+      strokeWeight(5);
+      stroke(255,255,0);
+      point(this.pos.x, this.pos.y);
+    } 
   }
 
-  sendOnCreation() {
-    var data = {
-      a: this.angle,
-      x: this.pos.x,
-      y: this.pos.y,
-      s: this.shooter,
-      id: this.id,
-      t: currTime
-    };
-    socket.emit('b',data); //bullet
-  }
+
 }
