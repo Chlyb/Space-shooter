@@ -26,9 +26,8 @@ io.sockets.on('connection',
     
     socket.on('p', //position
       function(data) {
-        //console.log("pos");
-        //socket.broadcast.emit('p', data);
-        io.emit('p', data);
+        socket.broadcast.emit('p', data);
+        //io.emit('p', data);
       }
     );
 
@@ -41,6 +40,12 @@ io.sockets.on('connection',
     socket.on('h', //hit
       function(data) {
         socket.broadcast.emit('h', data);
+      }
+    );
+
+    socket.on('d', //destroyed
+      function(data) {
+        socket.broadcast.emit('d', data);   
       }
     );
 

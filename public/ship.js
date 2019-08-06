@@ -96,29 +96,45 @@ class Ship {
         }
       }
     }
+ 
+    if(this.vi != 0 && gi%3 == 1) {
+      let v = createVector(0,-200*this.vi);
+      v.rotate(-this.angle);
+      v.add(this.vel);
+      v.add(p5.Vector.random2D().mult(50));
+      
+      let p = new Particle(this.pos.x, this.pos.y, v.x, v.y, 0, 0, color(0,0,0,255), 0, color(255,255,255,255), 2, 0, 5);
+      particles.push(p);
+    }
   }
 
-  physics() {
+  update() {
     if(this.cooldown > 0) this.cooldown--;
 
-    if(this.pos.x < 0) this.pos.x = WIDTH;
-    if(this.pos.x > WIDTH) this.pos.x = 0;
-    if(this.pos.y < 0) this.pos.y = HEIGHT;
-    if(this.pos.y > HEIGHT) this.pos.y = 0;
+    let destroyed = false;
+    if(this.pos.x < 0) destroyed = true;
+    if(this.pos.x > WIDTH)  destroyed = true;
+    if(this.pos.y < 0) destroyed = true;
+    if(this.pos.y > HEIGHT) destroyed = true;
 
     for(let b of bullets.values()) {
       if(b.shooter != myId) {
         let d = this.pos.copy();
         d.sub(b.pos);
-        if(d.magSq() < 25){
-          this.health--;
+        if(d.magSq() < 150){
+          this.hit();
           this.sendHit(b);
           bullets.delete(b.shooter + b.id);
         }
       }
     }
 
-    if(this.health <= 0) this.destroyed();
+    if(this.health <= 0) destroyed = true;
+
+    if(destroyed) {
+      this.sendDestroyed();
+      this.destroyed(true);
+    }
   }
 
   show() {
@@ -170,18 +186,50 @@ class Ship {
 
   sendHit(b) {
     var data = {
+      h: myId,
       s: b.shooter,
       id: b.id
     };
     socket.emit('h',data); //hit
   }
 
-  destroyed() {
-    this.pos.x = Math.random()*WIDTH;
-    this.pos.y = Math.random()*HEIGHT;
-    this.vel.x = 0;
-    this.vel.y = 0;
+  sendDestroyed() {
+    var data = {
+      id: myId,
+      x: this.pos.x,
+      y: this.pos.y
+    };
+    socket.emit('d',data); //destoyed
+  }
 
-    this.health = 3;
+  destroyed(original) {
+    let p = new Particle(this.pos.x, this.pos.y, 0, 0, 5, 5, color(255,255,0,255), -20, color(255,255,0,255), 5, -5/20, 20);
+    particles.push(p);
+
+    for(let i = 0; i < 30; ++i) {
+      let v= p5.Vector.random2D();
+      v.mult(Math.random()*300);
+      v.add(this.vel);
+
+      let p = new Particle(this.pos.x, this.pos.y, v.x, v.y, 0, 0, color(0,0,0,255), 0, color(255,255,255,255), 5, -5/40, 40);
+      particles.push(p);
+    }
+
+    if(original) {
+      this.pos.x = Math.random()*WIDTH;
+      this.pos.y = Math.random()*HEIGHT;
+      this.vel.x = 0;
+      this.vel.y = 0;
+
+      this.cooldown = 0;
+      this.ammo = 10;
+      this.health = 3;
+    }
+  }
+
+  hit(){
+    let p = new Particle(this.pos.x, this.pos.y, 0, 0, 0, 2, color(255,255,0,255), -20, color(255,255,0,255), 2.5, -2.5/10, 10);
+    particles.push(p);
+    this.health--;
   }
 }

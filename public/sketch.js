@@ -11,6 +11,7 @@ var horizontalInput = 0;
 
 var ships = new Map();
 var bullets = new Map();
+var particles = [];
 
 var myShip;
 var myId;
@@ -69,7 +70,20 @@ function setup() {
 
   socket.on('h', //hit
     function(data) {
+      let sh = ships.get(data.h);
+      sh.hit();
       bullets.delete(data.s + data.id);    
+    }
+  );
+
+  socket.on('d', //destroyed
+    function(data) {
+      let sh = ships.get(data.id);
+      if(typeof sh !== 'undefined'){
+        sh.pos.x = data.x;
+        sh.pos.y = data.y;
+        sh.destroyed(false);
+      }
     }
   );
 
@@ -102,7 +116,7 @@ function draw() {
 
   if(typeof myShip !== "undefined") {
     let changed = myShip.input();
-    myShip.physics();
+    myShip.update();
     myShip.move(dt);
     
     gi++;
@@ -118,6 +132,15 @@ function draw() {
     sh.move(dt);
     fill(0,255,255,255);
     sh.show();
+  }
+
+  for(let i = particles.length - 1; i >= 0; i--){
+    let p = particles[i];
+    p.update(dt);
+    p.show();
+    if(p.life == 0) {
+      particles.splice(i, 1);
+    }
   }
 
   prevTime = currTime;
