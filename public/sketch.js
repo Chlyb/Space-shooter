@@ -12,6 +12,7 @@ var horizontalInput = 0;
 var ships = new Map();
 var bullets = new Map();
 var particles = [];
+var comets = [];
 
 var myShip;
 var myId;
@@ -87,6 +88,15 @@ function setup() {
     }
   );
 
+  socket.on('c', //comet
+    function(data) {
+      let timeDif = (currTime-data.t)/1000;
+      let c = new Comet(data.x, data.y, data.vx, data.vy, data.r);
+      c.move(timeDif);
+      comets.push(c);
+    }
+  );
+
   //called once we connect
   socket.on('connected',
     function(data) {
@@ -132,6 +142,17 @@ function draw() {
     sh.move(dt);
     fill(0,255,255,255);
     sh.show();
+  }
+
+  for(let i = comets.length - 1; i >= 0; i--){
+    let c = comets[i];
+    if(c.update()){
+      comets.splice(i, 1);
+    }
+    else {
+      c.move(dt);
+      c.show();
+    }
   }
 
   for(let i = particles.length - 1; i >= 0; i--){

@@ -129,6 +129,15 @@ class Ship {
       }
     }
 
+    for(let c of comets.values()) {
+      let d = (this.pos.x - c.x)*(this.pos.x - c.x);
+      d += (this.pos.y - c.y)*(this.pos.y - c.y);
+      if(d < 100 + c.r*c.r){
+        this.sendDestroyed();
+        this.destroyed(true);
+      }
+    }
+
     if(this.health <= 0) destroyed = true;
 
     if(destroyed) {
