@@ -1,6 +1,35 @@
 var WIDTH = 600;
 var HEIGHT = 400;
 
+//asteroids
+var n = Math.random()*3 + 2; 
+var xs = [];
+var ys = [];
+var seeds = [];
+
+let d;
+
+let i = 0;
+while(i < n) {
+  let x = Math.random()*600;
+  let y = Math.random()*300;
+     
+  let coll = false;
+  
+  for(let j =0; j < xs.length; j++){
+    d = (x - xs[j])*(x - xs[j]) + (y - ys[j])*(y - ys[j]);
+    if(d < 200*200)
+      coll = true;
+  }
+  
+  if(!coll){
+    xs.push(x);
+    ys.push(y);
+    seeds.push(Math.random()*10000000);
+    i++;
+  }
+}
+
 var express = require('express');
 // Create the app
 var app = express();
@@ -25,7 +54,19 @@ io.sockets.on('connection',
   function (socket) {
   
     console.log("We have a new client: " + socket.id);
-    socket.emit('connected', { id: socket.id, x: 500*Math.random(), y: 500*Math.random()});
+
+    var data = {
+      id: socket.id,
+      x: WIDTH*Math.random(),
+      y: HEIGHT*Math.random(),
+
+      //asteroids
+      xs: xs,
+      ys: ys,
+      s: seeds
+    };
+    socket.emit('connected', data);
+    //socket.emit('connected', { id: socket.id, x: 500*Math.random(), y: 500*Math.random()});
     
     socket.on('p', //position
       function(data) {
@@ -57,6 +98,9 @@ io.sockets.on('connection',
     });
   }
 );
+
+
+
 
 setInterval( update, 100);
 

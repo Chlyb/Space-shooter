@@ -25,8 +25,9 @@ class Comet {
   }
 
   show() {
-    strokeWeight(2*this.r);
-    stroke(100,100,100);
-    point(this.x, this.y);
+    fill(80);
+    stroke(50);
+    strokeWeight(3);
+    ellipse(this.x, this.y, 2*this.r, 2*this.r);
   }
 }

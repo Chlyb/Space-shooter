@@ -117,6 +117,26 @@ class Ship {
     if(this.pos.y < 0) destroyed = true;
     if(this.pos.y > HEIGHT) destroyed = true;
 
+    for(let a of asteroids) {
+      noiseSeed( a.seed);
+      //let v = createVector(a.x, a.y);
+      let v = this.pos.copy();
+      //v.sub(this.pos);
+      v.sub(a.x, a.y);
+
+      let d = v.mag();
+
+      v.normalize();
+
+      let xoff = map(v.x,-1,1,0,1.5);
+      let yoff = map(v.y,-1,1,0,1.5);
+      let r = map(noise(xoff, yoff), 0,1,20,100);
+
+      if(d <= r){
+        destroyed = true;
+      }
+    }
+
     for(let b of bullets.values()) {
       if(b.shooter != myId) {
         let d = this.pos.copy();

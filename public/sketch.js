@@ -13,6 +13,7 @@ var ships = new Map();
 var bullets = new Map();
 var particles = [];
 var comets = [];
+var asteroids = [];
 
 var myShip;
 var myId;
@@ -102,6 +103,12 @@ function setup() {
     function(data) {
       myId = data.id;
       myShip = new Ship(data.x,data.y);
+
+      for(let i = 0; i < data.xs.length; i++){
+        print("aste");
+        let a = new Asteroid(data.xs[i], data.ys[i], data.s[i]);
+        asteroids.push(a);
+      }
     }
   );
 }
@@ -113,6 +120,10 @@ function draw() {
   background(0);
   verticalInput = 0;
   horizontalInput = 0;
+
+  for(let a of asteroids){
+    a.show();
+  }
 
   for(let b of bullets.values()) {
     if(b.update()){
