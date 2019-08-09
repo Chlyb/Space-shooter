@@ -127,6 +127,7 @@ function draw() {
 
   for(let b of bullets.values()) {
     if(b.update()){
+      b.onHit();
       bullets.delete(b.shooter + b.id);
     }
     else {
