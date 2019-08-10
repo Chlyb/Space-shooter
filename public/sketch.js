@@ -56,8 +56,26 @@ function setup() {
   socket.on('b', //bullet
     function(data) {
       let b = new Bullet(data.a, data.x, data.y, data.s, data.id);
+      bullets.set(data.s + data.id, b);
+      
       let timeDif = (currTime-data.t)/1000;
-      b.move(timeDif);
+      
+      myShip.move(-timeDif);
+      let hit = false;
+
+      while(timeDif > 0 && !hit) {
+        timeDif -= 0.01666;
+        let dt = 0.01666;
+        if(timeDif < 0) dt = timeDif + 0.01666;
+
+        b.move(dt);
+        myShip.move(dt);
+        myShip.update();
+  
+        if(b.update()){
+          hit = true;
+        }
+      }
 
       b.usePseudoPos = true;   
       b.pPos = ships.get(data.s).pos.copy();
@@ -65,8 +83,6 @@ function setup() {
       b.pVel.sub(b.pPos);
       b.pVel.div(0.1);
       b.timeToCompensationEnd = 0.1;
-
-      bullets.set(data.s + data.id, b);
     }
   );
 
