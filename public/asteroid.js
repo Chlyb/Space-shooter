@@ -24,8 +24,8 @@ class Asteroid {
   }
 
   show() {
-    fill(60);
-    stroke(40);
+    fill(50);
+    stroke(30);
     strokeWeight(3);
     beginShape();
     for(let i = 0; i < this.xs.length; i++) {
