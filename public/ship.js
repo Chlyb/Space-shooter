@@ -1,5 +1,5 @@
 class Ship {
-  constructor(x,y) {
+  constructor(x,y, id) {
     this.angle = 0;
     this.pos = createVector(x,y);
     this.vel = createVector();
@@ -11,29 +11,68 @@ class Ship {
     this.hi = 0;
     this.vi = 0;
 
+    this.id = id;
+
     this.usePseudoPos = false;
     this.pAngle = this.angle;
     this.pPos = this.pos.copy();
     this.timeToCompensationEnd = 0;
   }
 
-  input() {
+  input(method) {
+    let verticalInput = 0;
+    let horizontalInput = 0;
 
-    if (keyIsDown(LEFT_ARROW) || keyIsDown(65)) {
+    if(method == 'left'){
+      if (keyIsDown(65)) {
       horizontalInput++;
-    } 
-    if (keyIsDown(RIGHT_ARROW) || keyIsDown(68)) {
-      horizontalInput--;
+      } 
+      if (keyIsDown(68)) {
+        horizontalInput--;
+      }
+      if (keyIsDown(87)) {
+        verticalInput++;
+      }
+      if (keyIsDown(83)) {
+        verticalInput--;
+      }
+      if (keyIsDown(SHIFT)) {
+        if(this.cooldown == 0) this.shot();
+      }
     }
-    if (keyIsDown(UP_ARROW) || keyIsDown(87)) {
-      verticalInput++;
+    else if(method == 'right'){
+      if (keyIsDown(LEFT_ARROW)) {
+        horizontalInput++;
+      } 
+      if (keyIsDown(RIGHT_ARROW)) {
+        horizontalInput--;
+      }
+      if (keyIsDown(UP_ARROW)) {
+        verticalInput++;
+      }
+      if (keyIsDown(DOWN_ARROW)) {
+        verticalInput--;
+      }
+      if (keyIsDown(32)) {
+        if(this.cooldown == 0) this.shot();
+      }
     }
-    if (keyIsDown(DOWN_ARROW) || keyIsDown(83)) {
-      verticalInput--;
-    }
-
-    if (keyIsDown(32)) {
-      if(this.cooldown == 0) this.shot();
+    else {
+      if (keyIsDown(LEFT_ARROW) || keyIsDown(65)) {
+        horizontalInput++;
+      } 
+      if (keyIsDown(RIGHT_ARROW) || keyIsDown(68)) {
+        horizontalInput--;
+      }
+      if (keyIsDown(UP_ARROW) || keyIsDown(87)) {
+        verticalInput++;
+      }
+      if (keyIsDown(DOWN_ARROW) || keyIsDown(83)) {
+        verticalInput--;
+      }
+      if (keyIsDown(32) || keyIsDown(SHIFT)) {
+        if(this.cooldown == 0) this.shot();
+      }
     }
 
     let changed = false;
@@ -45,20 +84,22 @@ class Ship {
     return changed;
   }
 
-  shot() {
-    let b = new Bullet(this.angle, this.pos.x, this.pos.y, myId, this.ammo);
+  shot(multiplayer) {
+    let b = new Bullet(this.angle, this.pos.x, this.pos.y, this.id, this.ammo);
 
-    var data = {
-      a: this.angle,
-      x: this.pos.x,
-      y: this.pos.y,
-      s: myId,
-      id: this.ammo,
-      t: currTime
-    };
-    socket.emit('b',data); //bullet
+    if(multiplayer) {
+      var data = {
+        a: this.angle,
+        x: this.pos.x,
+        y: this.pos.y,
+        s: this.id,
+        id: this.ammo,
+        t: currTime
+      };
+      socket.emit('b',data); //bullet
+    }
 
-    bullets.set(myId + this.ammo, b);
+    session.addBullet(b);
 
     if(this.ammo == 0){
       this.ammo = 15;
@@ -104,7 +145,7 @@ class Ship {
       v.add(p5.Vector.random2D().mult(50));
       
       let p = new Particle(this.pos.x, this.pos.y, v.x, v.y, 0, 0, color(0,0,0,255), 0, color(255,255,255,255), 2, 0, 5);
-      particles.push(p);
+      session.particles.push(p);
     }
   }
 
@@ -117,11 +158,10 @@ class Ship {
     if(this.pos.y < 0) destroyed = true;
     if(this.pos.y > HEIGHT) destroyed = true;
 
-    for(let a of asteroids) {
+    for(let a of session.asteroids) {
       noiseSeed( a.seed);
-      //let v = createVector(a.x, a.y);
+
       let v = this.pos.copy();
-      //v.sub(this.pos);
       v.sub(a.x, a.y);
 
       let d = v.mag();
@@ -137,31 +177,29 @@ class Ship {
       }
     }
 
-    for(let b of bullets.values()) {
-      if(b.shooter != myId) {
+    for(let b of session.getBullets()) {
+      if(b.shooter != this.id) {  
         let d = this.pos.copy();
         d.sub(b.pos);
         if(d.magSq() < 150){
           this.hit();
-          this.sendHit(b);
-          bullets.delete(b.shooter + b.id);
+          session.removeBullet(b);
         }
       }
     }
 
-    for(let c of comets.values()) {
+    for(let c of session.getComets()) {
       let d = (this.pos.x - c.x)*(this.pos.x - c.x);
       d += (this.pos.y - c.y)*(this.pos.y - c.y);
       if(d < 100 + c.r*c.r){
-        this.sendDestroyed();
-        this.destroyed(true);
+        destroyed = true;
       }
     }
 
     if(this.health <= 0) destroyed = true;
 
     if(destroyed) {
-      this.sendDestroyed();
+      session.playerDestroyed(this);
       this.destroyed(true);
     }
   }
@@ -192,7 +230,6 @@ class Ship {
     this.pos.y = data.y;
     this.vel.x = data.vx;
     this.vel.y = data.vy;
-
     this.hi = data.hi;
     this.vi = data.vi;
   }
@@ -204,9 +241,8 @@ class Ship {
       y: this.pos.y,
       vx: this.vel.x,
       vy: this.vel.y,
-      id: myId,
+      id: this.id,
       time: currTime,
-
       vi: this.vi,
       hi: this.hi
     };
@@ -215,7 +251,7 @@ class Ship {
 
   sendHit(b) {
     var data = {
-      h: myId,
+      h: session.myId,
       s: b.shooter,
       id: b.id
     };
@@ -224,7 +260,7 @@ class Ship {
 
   sendDestroyed() {
     var data = {
-      id: myId,
+      id: this.id,
       x: this.pos.x,
       y: this.pos.y
     };
@@ -233,7 +269,7 @@ class Ship {
 
   destroyed(original) {
     let p = new Particle(this.pos.x, this.pos.y, 0, 0, 5, 5, color(255,255,0,255), -20, color(255,255,0,255), 5, -5/20, 20);
-    particles.push(p);
+    session.particles.push(p);
 
     for(let i = 0; i < 30; ++i) {
       let v= p5.Vector.random2D();
@@ -241,7 +277,7 @@ class Ship {
       v.add(this.vel);
 
       let p = new Particle(this.pos.x, this.pos.y, v.x, v.y, 0, 0, color(0,0,0,255), 0, color(255,255,255,255), 5, -5/40, 40);
-      particles.push(p);
+      session.particles.push(p);
     }
 
     if(original) {
@@ -258,7 +294,7 @@ class Ship {
 
   hit(){
     let p = new Particle(this.pos.x, this.pos.y, 0, 0, 0, 2, color(255,255,0,255), -20, color(255,255,0,255), 2.5, -2.5/10, 10);
-    particles.push(p);
+    session.particles.push(p);
     this.health--;
   }
 }

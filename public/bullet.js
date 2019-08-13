@@ -19,7 +19,7 @@ class Bullet {
     if(this.pos.y > HEIGHT) return true;
     if(this.pos.y < 0) return true;
 
-    for(let a of asteroids) {
+    for(let a of session.asteroids) {
       noiseSeed( a.seed);
       let v = this.pos.copy();
       v.sub(a.x, a.y);
@@ -37,13 +37,12 @@ class Bullet {
       }
     }
 
-    for(let c of comets.values()) {
+    for(let c of session.getComets()) {
       let d = (this.pos.x - c.x)*(this.pos.x - c.x) + (this.pos.y - c.y)*(this.pos.y - c.y);
       if(d < c.r*c.r){
         return true;
       }
     }
-
     return false;
   }
 
@@ -68,6 +67,7 @@ class Bullet {
 
   show() {
     if(this.usePseudoPos && this.timeToCompensationEnd > 0) {
+      print("pseudo");
       strokeWeight(5);
       stroke(255,255,0);
       point(this.pPos.x, this.pPos.y);
@@ -81,7 +81,7 @@ class Bullet {
 
   onHit() {
     let p = new Particle(this.pos.x, this.pos.y, 0, 0, 0, 2, color(255,255,0,255), -20, color(255,255,0,255), 2.5, -2.5/10, 10);
-    particles.push(p);
+    session.particles.push(p);
   }
 
 
