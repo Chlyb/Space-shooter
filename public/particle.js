@@ -1,5 +1,5 @@
 class Particle {
-  constructor(x, y, vx, vy, r, vr, fill, va, s, sw, vs, life) {
+  constructor(x, y, vx, vy, r, vr, fill, a, va, s, sw, vs, life) {
     this.x = x;
     this.y = y;
     this.vx = vx;
@@ -9,7 +9,7 @@ class Particle {
     this.vr = vr;
 
     this.fill = fill;
-    this.a = 255; //alpha
+    this.a = a; //alpha
     this.va = va; //alpha velocity
 
     this.stroke = s;

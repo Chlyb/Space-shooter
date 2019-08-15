@@ -6,7 +6,7 @@ class Ship {
 
     this.cooldown = 0;
     this.ammo = 10;
-    this.health = 3;
+    this.health = -1;
 
     this.hi = 0;
     this.vi = 0;
@@ -112,6 +112,8 @@ class Ship {
   }
 
   move(dt) {
+    if(this.health <= 0) return;
+
     let acc = createVector(0, 200*dt);
     acc.mult(this.vi).rotate(-this.angle);
     this.vel.add(acc);
@@ -144,13 +146,20 @@ class Ship {
       v.add(this.vel);
       v.add(p5.Vector.random2D().mult(50));
       
-      let p = new Particle(this.pos.x, this.pos.y, v.x, v.y, 0, 0, color(0,0,0,255), 0, color(255,255,255,255), 2, 0, 5);
+      let p = new Particle(this.pos.x, this.pos.y, v.x, v.y, 0, 0, color(0,0,0,255), 255, -20, color(255,255,255,255), 2, 0, 5);
       session.particles.push(p);
     }
   }
 
   update() {
     if(this.cooldown > 0) this.cooldown--;
+    if(this.cooldown == 0 && this.health == -1) { //respawn
+      this.health = 3;
+      this.pos = Ship.findSpawnpoint();
+      let p = new Particle(this.pos.x, this.pos.y, 0, 0, 125, -5, color(0,0,255,255), -100, 15, color(0,0,255,255), 5, -5/20, 20);
+      session.particles.push(p);
+    }
+    if(this.health <= 0) return;
 
     let destroyed = false;
     if(this.pos.x < 0) destroyed = true;
@@ -205,6 +214,8 @@ class Ship {
   }
 
   show() {
+    if(this.health < 0) return;
+
     noStroke();
 
     if(this.usePseudoPos){
@@ -268,7 +279,9 @@ class Ship {
   }
 
   destroyed(original) {
-    let p = new Particle(this.pos.x, this.pos.y, 0, 0, 5, 5, color(255,255,0,255), -20, color(255,255,0,255), 5, -5/20, 20);
+    this.health = -1; //flag for being dead
+
+    let p = new Particle(this.pos.x, this.pos.y, 0, 0, 5, 5, color(255,255,0,255), 255, -20, color(255,255,0,255), 5, -5/20, 20);
     session.particles.push(p);
 
     for(let i = 0; i < 30; ++i) {
@@ -276,25 +289,78 @@ class Ship {
       v.mult(Math.random()*300);
       v.add(this.vel);
 
-      let p = new Particle(this.pos.x, this.pos.y, v.x, v.y, 0, 0, color(0,0,0,255), 0, color(255,255,255,255), 5, -5/40, 40);
+      let p = new Particle(this.pos.x, this.pos.y, v.x, v.y, 0, 0, color(0,0,0,255), 255, 0, color(255,255,255,255), 5, -5/40, 40);
       session.particles.push(p);
     }
 
     if(original) {
-      this.pos.x = Math.random()*WIDTH;
-      this.pos.y = Math.random()*HEIGHT;
       this.vel.x = 0;
       this.vel.y = 0;
 
-      this.cooldown = 0;
-      this.ammo = 10;
-      this.health = 3;
+      this.cooldown = 180;
+      this.ammo = 10; 
     }
   }
 
   hit(){
-    let p = new Particle(this.pos.x, this.pos.y, 0, 0, 0, 2, color(255,255,0,255), -20, color(255,255,0,255), 2.5, -2.5/10, 10);
+    let p = new Particle(this.pos.x, this.pos.y, 0, 0, 0, 2, color(255,255,0,255), 255, -20, color(255,255,0,255), 2.5, -2.5/10, 10);
     session.particles.push(p);
     this.health--;
+  }
+
+  static findSpawnpoint(){
+    let found = false;
+    var x;
+    var y;
+    var newPos;
+
+    while(!found){
+      x = Math.random()*WIDTH;
+      y = Math.random()*HEIGHT;
+      newPos = createVector(x, y);
+
+      found = true;
+
+      for(let a of session.asteroids) {
+        noiseSeed( a.seed);
+
+        let v = newPos.copy();
+        v.sub(a.x, a.y);
+
+        let d = v.mag();
+
+        v.normalize();
+
+        let xoff = map(v.x,-1,1,0,1.5);
+        let yoff = map(v.y,-1,1,0,1.5);
+        let r = map(noise(xoff, yoff), 0,1,20,100);
+
+        if(d <= r + 50){
+          found = false;
+          break;
+        }
+      }
+      
+      if(found)
+      for(let b of session.getBullets()) {
+          let d = newPos.copy();
+          d.sub(b.pos);
+          if(d.magSq() < 10000){
+            found = false;
+            break;
+          }
+      }
+
+      if(found)
+      for(let c of session.getComets()) {
+        let d = (newPos.x - c.x)*(newPos.x - c.x);
+        d += (newPos.y - c.y)*(newPos.y - c.y);
+        if(d < 10000 + c.r*c.r){
+          found = false;
+          break;
+        }
+      }
+    }
+    return newPos;
   }
 }

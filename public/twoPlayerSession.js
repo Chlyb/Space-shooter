@@ -3,8 +3,11 @@ class TwoPlayerSession extends Session{
         super();
         this.bullets = [];
 
-        this.leftShip = new Ship( Math.random()*WIDTH, Math.random()*HEIGHT, 'left');
-        this.rightShip = new Ship( Math.random()*WIDTH, Math.random()*HEIGHT, 'right');
+        this.leftShip = new Ship( 0, 0, 'left');
+        this.rightShip = new Ship( 0, 0, 'right');
+
+        //this.leftShip.pos = Ship.findSpawnpoint();
+        //this.rightShip.pos = Ship.findSpawnpoint();
 
         let gameMap = sharedModule.generateMap();
 

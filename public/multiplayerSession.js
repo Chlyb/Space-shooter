@@ -38,6 +38,7 @@ class MultiplayerSession extends Session {
             this.myShip.move(dt);
 
             if (gi % 10 == 0 || changed) {
+              if(this.myShip.health > 0)
                 this.myShip.sendData();
             }
 
@@ -132,6 +133,14 @@ function setupSocket() {
             sh.pVel.sub(sh.pPos);
             sh.pVel.div(0.1);
             sh.timeToCompensationEnd = 0.1;
+
+            if(sh.health == -1){
+              sh.health = 3; 
+              let p = new Particle(sh.pos.x, sh.pos.y, 0, 0, 125, -5, color(0,0,255,255), -100, 15, color(0,0,255,255), 5, -5/20, 20);
+              session.particles.push(p);
+
+              sh.timeToCompensationEnd = 0;
+            }   
         }
     );
 
@@ -182,6 +191,7 @@ function setupSocket() {
                 sh.pos.x = data.x;
                 sh.pos.y = data.y;
                 sh.destroyed(false);
+                sh.health = -1;
             }
         }
     );
