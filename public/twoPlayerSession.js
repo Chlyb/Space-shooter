@@ -74,6 +74,12 @@ class TwoPlayerSession extends Session{
                 this.particles.splice(i, 1);
             }
         }
+
+        textSize(16);
+        fill(255,255,255,150);
+        noStroke();
+        text("Player1 " + this.leftShip.kills + " " + this.leftShip.deaths, 10, 20);
+        text("Player2 " + this.rightShip.kills + " " + this.rightShip.deaths, 10, 40);
     }
 
     getComets(){
@@ -84,8 +90,11 @@ class TwoPlayerSession extends Session{
       return this.bullets;
     }
 
-    playerDestroyed(p){
-
+    playerDestroyed(p, cause){
+      if(cause == "left")
+        this.leftShip.kills++;
+      else if(cause == "right")
+        this.rightShip.kills++;
     }
 
     addBullet(b){

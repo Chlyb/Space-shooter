@@ -12,6 +12,8 @@ class Ship {
     this.vi = 0;
 
     this.id = id;
+    this.kills = 0;
+    this.deaths = 0;
 
     this.usePseudoPos = false;
     this.pAngle = this.angle;
@@ -86,7 +88,7 @@ class Ship {
 
   shot(multiplayer) {
     let b = new Bullet(this.angle, this.pos.x, this.pos.y, this.id, this.ammo);
-
+    /*
     if(multiplayer) {
       var data = {
         a: this.angle,
@@ -97,7 +99,7 @@ class Ship {
         t: currTime
       };
       socket.emit('b',data); //bullet
-    }
+    }*/
 
     session.addBullet(b);
 
@@ -162,10 +164,24 @@ class Ship {
     if(this.health <= 0) return;
 
     let destroyed = false;
-    if(this.pos.x < 0) destroyed = true;
-    if(this.pos.x > WIDTH)  destroyed = true;
-    if(this.pos.y < 0) destroyed = true;
-    if(this.pos.y > HEIGHT) destroyed = true;
+    let deathCause;
+
+    if(this.pos.x < 0){
+      destroyed = true;
+      deathCause = "wall";
+    } 
+    if(this.pos.x > WIDTH) {
+      destroyed = true;
+      deathCause = "wall";
+    }  
+    if(this.pos.y < 0) {
+      destroyed = true;
+      deathCause = "wall";
+    }
+    if(this.pos.y > HEIGHT) {
+      destroyed = true;
+      deathCause = "wall";
+    }
 
     for(let a of session.asteroids) {
       noiseSeed( a.seed);
@@ -183,6 +199,7 @@ class Ship {
 
       if(d <= r){
         destroyed = true;
+        deathCause = "asteroid";
       }
     }
 
@@ -192,6 +209,10 @@ class Ship {
         d.sub(b.pos);
         if(d.magSq() < 150){
           this.hit();
+          if(this.health == 0) {
+            destroyed = true;
+            deathCause = b.shooter;
+          }
           session.removeBullet(b);
         }
       }
@@ -202,13 +223,12 @@ class Ship {
       d += (this.pos.y - c.y)*(this.pos.y - c.y);
       if(d < 100 + c.r*c.r){
         destroyed = true;
+        deathCause = "comet";
       }
     }
 
-    if(this.health <= 0) destroyed = true;
-
     if(destroyed) {
-      session.playerDestroyed(this);
+      session.playerDestroyed(this, deathCause);
       this.destroyed(true);
     }
   }
@@ -262,24 +282,26 @@ class Ship {
 
   sendHit(b) {
     var data = {
-      h: session.myId,
+      h: this.id,
       s: b.shooter,
       id: b.id
     };
     socket.emit('h',data); //hit
   }
 
-  sendDestroyed() {
+  sendDestroyed(cause) {
     var data = {
       id: this.id,
       x: this.pos.x,
-      y: this.pos.y
+      y: this.pos.y,
+      c: cause
     };
     socket.emit('d',data); //destoyed
   }
 
   destroyed(original) {
     this.health = -1; //flag for being dead
+    this.deaths++;
 
     let p = new Particle(this.pos.x, this.pos.y, 0, 0, 5, 5, color(255,255,0,255), 255, -20, color(255,255,0,255), 5, -5/20, 20);
     session.particles.push(p);

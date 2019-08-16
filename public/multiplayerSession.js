@@ -71,6 +71,19 @@ class MultiplayerSession extends Session {
             }
         }
 
+        textSize(16);
+        fill(255,255,255,150);
+        noStroke();
+
+        if (typeof this.myShip !== "undefined")
+          text("Me " + this.myShip.kills + " " + this.myShip.deaths, 10, 20);
+
+        let i = 0;
+        for (let sh of this.ships.values()){
+          text(sh.id + " " + sh.kills + " " + sh.deaths, 10, 40 + 20 * i);
+          i++;
+        }
+
         prevTime = currTime;
     }
 
@@ -82,8 +95,11 @@ class MultiplayerSession extends Session {
         return this.bullets.values();
     }
 
-    playerDestroyed(p) {
-        this.myShip.sendDestroyed();
+    playerDestroyed(p, cause) {
+      this.myShip.sendDestroyed(cause);
+
+      if(cause[0] == "/")
+        this.ships.get(cause).kills++;
     }
 
     addBullet(b) {
@@ -192,6 +208,13 @@ function setupSocket() {
                 sh.pos.y = data.y;
                 sh.destroyed(false);
                 sh.health = -1;
+
+                if(data.c == session.myShip.id){
+                  session.myShip.kills++;
+                }
+                else {
+                  session.ships.get(data.c).kills++;
+                }
             }
         }
     );
@@ -213,6 +236,13 @@ function setupSocket() {
             for (let i = 0; i < data.xs.length; i++) {
                 let a = new Asteroid(data.xs[i], data.ys[i], data.s[i]);
                 session.asteroids.push(a);
+            }
+            
+            for (let c of data.clients){
+              let sh = new Ship(0,0,c.id);
+              sh.kills = c.kills;
+              sh.deaths = c.deaths;
+              session.ships.set(c.id, sh);
             }
         }
     );

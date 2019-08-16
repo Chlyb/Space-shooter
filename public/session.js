@@ -18,7 +18,7 @@ class Session {
     getBullets(){
     }
 
-    playerDestroyed(p){
+    playerDestroyed(p, cause){
     }
 
     addBullet(b){

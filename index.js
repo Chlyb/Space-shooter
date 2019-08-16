@@ -7,6 +7,7 @@ var sharedModule = require('./public/sharedModule'),
 sys = require('util');
 
 var gameMap = sharedModule.generateMap();
+var clients = new Map();
 
 // Set up the server
 var server = app.listen(process.env.PORT || 6000, listen);
@@ -29,6 +30,8 @@ io.sockets.on('connection',
   
     console.log("We have a new client: " + socket.id);
 
+    let cli =  Array.from( clients.values() );
+
     var data = {
       id: socket.id,
       x: sharedModule.WIDTH*Math.random(),
@@ -37,9 +40,18 @@ io.sockets.on('connection',
       //asteroids
       xs: gameMap.xs,
       ys: gameMap.ys,
-      s: gameMap.s
+      s: gameMap.s,
+
+      clients: cli
     };
     socket.emit('connected', data);
+
+    var client = {
+      id: socket.id,
+      kills: 0,
+      deaths: 0
+    };
+    clients.set(socket.id, client);
     
     socket.on('p', //position
       function(data) {
@@ -62,12 +74,16 @@ io.sockets.on('connection',
 
     socket.on('d', //destroyed
       function(data) {
-        socket.broadcast.emit('d', data);   
+        socket.broadcast.emit('d', data);  
+        clients.get(data.id).deaths++;
+        if(data.c[0]=='/')
+          clients.get(data.c).kills++;
       }
     );
 
     socket.on('disconnect', function() {
       console.log("Client has disconnected");
+      clients.delete(socket.id);
     });
   }
 );
