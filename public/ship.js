@@ -1,5 +1,5 @@
 class Ship {
-  constructor(x,y, id) {
+  constructor(x,y, id, nick) {
     this.angle = 0;
     this.pos = createVector(x,y);
     this.vel = createVector();
@@ -12,6 +12,7 @@ class Ship {
     this.vi = 0;
 
     this.id = id;
+    this.nick = nick;
     this.kills = 0;
     this.deaths = 0;
 

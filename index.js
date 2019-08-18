@@ -48,10 +48,19 @@ io.sockets.on('connection',
 
     var client = {
       id: socket.id,
+      nick: "",
       kills: 0,
       deaths: 0
     };
     clients.set(socket.id, client);
+
+    socket.on('n', //nick
+      function(data) {
+        socket.broadcast.emit('n', data);
+
+        clients.get(data.id).nick = data.n;
+      }
+    );
     
     socket.on('p', //position
       function(data) {

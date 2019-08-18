@@ -6,6 +6,7 @@ var inSession = false;
 
 var tpBut;
 var mpBut;
+var nickInput;
 
 function setup() {
   createCanvas(WIDTH, HEIGHT);
@@ -24,6 +25,14 @@ function setup() {
   mpBut.style('font-size', '32px');
   mpBut.position(230, 220);
   mpBut.mousePressed(mpButFun);
+  mpBut.style('background-color', 'black');
+
+  nickInput = createInput('Player');
+  nickInput.position(280, 120);
+  nickInput.style('background-color', 'black');
+  nickInput.style('color', 'white');
+  nickInput.style('font-size', '18px');
+  nickInput.size(115);
 }
 
 function draw() {
@@ -35,27 +44,38 @@ function draw() {
     textSize(64);
     fill('white');
     text('Space shooter', 100, 100);
+    textSize(18);
+    text('Nick: ', 225, 130);
   }
 
   if (keyIsDown(ESCAPE)){
     inSession = false;
     socket = null;
-    tpBut.show();
-    mpBut.show();
+    showDOM();
   }
 }
 
 function tpButFun() {
   session = new TwoPlayerSession();
   inSession = true;
-  tpBut.hide();
-  mpBut.hide();
+  hideDOM();
 }
 
 function mpButFun() {
   session = new MultiplayerSession();
   inSession = true;
+  hideDOM();
+}
+
+function showDOM() {
+  tpBut.show();
+  mpBut.show();
+  nickInput.show();
+}
+
+function hideDOM() {
   tpBut.hide();
   mpBut.hide();
+  nickInput.hide();
 }
 

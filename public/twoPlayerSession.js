@@ -3,8 +3,8 @@ class TwoPlayerSession extends Session{
         super();
         this.bullets = [];
 
-        this.leftShip = new Ship( 0, 0, 'left');
-        this.rightShip = new Ship( 0, 0, 'right');
+        this.leftShip = new Ship( 0, 0, 'left', 'Player 1');
+        this.rightShip = new Ship( 0, 0, 'right', 'Player 2');
 
         //this.leftShip.pos = Ship.findSpawnpoint();
         //this.rightShip.pos = Ship.findSpawnpoint();

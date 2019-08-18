@@ -76,11 +76,11 @@ class MultiplayerSession extends Session {
         noStroke();
 
         if (typeof this.myShip !== "undefined")
-          text("Me " + this.myShip.kills + " " + this.myShip.deaths, 10, 20);
+          text(this.myShip.nick + " " + this.myShip.kills + " " + this.myShip.deaths, 10, 20);
 
         let i = 0;
         for (let sh of this.ships.values()){
-          text(sh.id + " " + sh.kills + " " + sh.deaths, 10, 40 + 20 * i);
+          text(sh.nick + " " + sh.kills + " " + sh.deaths, 10, 40 + 20 * i);
           i++;
         }
 
@@ -125,18 +125,17 @@ class MultiplayerSession extends Session {
 function setupSocket() {
     socket = io.connect(window.location.origin);
 
+    socket.on('n', //nick
+        function(data) {
+          let sh = new Ship(0, 0, data.id, data.n);
+          sh.usePseudoPos = true;
+          session.ships.set(data.id, sh);
+        }
+    );
+
     socket.on('p', //position
         function(data) {
             let sh = session.ships.get(data.id);
-            if (typeof sh === 'undefined') {
-                sh = new Ship(data.x, data.y, data.id);
-                sh.usePseudoPos = true;
-                session.ships.set(data.id, sh);
-
-                print("nowy");
-                print(data.id);
-                print(session.ships.get(data.id));
-            }
 
             let timeDif = (currTime - data.time) / 1000;
 
@@ -212,7 +211,7 @@ function setupSocket() {
                 if(data.c == session.myShip.id){
                   session.myShip.kills++;
                 }
-                else {
+                else if(data.c[0] != "/") {
                   session.ships.get(data.c).kills++;
                 }
             }
@@ -231,7 +230,7 @@ function setupSocket() {
     //called once we connect
     socket.on('connected',
         function(data) {
-            session.myShip = new Ship(data.x, data.y, data.id);
+            session.myShip = new Ship(data.x, data.y, data.id, nickInput.value());
 
             for (let i = 0; i < data.xs.length; i++) {
                 let a = new Asteroid(data.xs[i], data.ys[i], data.s[i]);
@@ -239,11 +238,13 @@ function setupSocket() {
             }
             
             for (let c of data.clients){
-              let sh = new Ship(0,0,c.id);
+              let sh = new Ship(0,0,c.id,c.nick);
               sh.kills = c.kills;
               sh.deaths = c.deaths;
               session.ships.set(c.id, sh);
             }
+
+            socket.emit('n', {id: data.id, n: nickInput.value()}); //nick
         }
     );
 }
