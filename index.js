@@ -91,6 +91,7 @@ io.sockets.on('connection',
     );
 
     socket.on('disconnect', function() {
+      socket.broadcast.emit('dis', socket.id);  
       console.log("Client has disconnected");
       clients.delete(socket.id);
     });

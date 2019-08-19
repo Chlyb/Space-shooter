@@ -3,8 +3,8 @@ class TwoPlayerSession extends Session{
         super();
         this.bullets = [];
 
-        this.leftShip = new Ship( 0, 0, 'left', 'Player 1');
-        this.rightShip = new Ship( 0, 0, 'right', 'Player 2');
+        this.leftShip = new Ship( 0, 0, '/left', 'Player1');
+        this.rightShip = new Ship( 0, 0, '/right', 'Player2');
 
         //this.leftShip.pos = Ship.findSpawnpoint();
         //this.rightShip.pos = Ship.findSpawnpoint();
@@ -75,8 +75,22 @@ class TwoPlayerSession extends Session{
             }
         }
 
+        let x = 380;
+        let y = 20;
+
+        for (let i = this.logs.length - 1; i >= 0; i--) {
+            let l = this.logs[i];
+            if (l.update()) {
+                this.logs.splice(i, 1);
+            }
+            else{
+              l.show(x,y);
+              y += 20;
+            }
+        }
+
         textSize(16);
-        fill(255,255,255,150);
+        fill(255,255,255,255);
         noStroke();
         text("Player1 " + this.leftShip.kills + " " + this.leftShip.deaths, 10, 20);
         text("Player2 " + this.rightShip.kills + " " + this.rightShip.deaths, 10, 40);
@@ -91,10 +105,26 @@ class TwoPlayerSession extends Session{
     }
 
     playerDestroyed(p, cause){
-      if(cause == "left")
+      let message;
+      if(cause == "/left") {
         this.leftShip.kills++;
-      else if(cause == "right")
+        message = "Player1 killed Player2";
+      }
+      else if(cause == "/right"){
         this.rightShip.kills++;
+        message = "Player2 killed Player1";
+      }
+      else if(cause == "wall"){
+        message = p.nick + " smashed into wall";
+      }
+      else if(cause == "comet"){
+        message = p.nick + " was killed by comet";
+      }
+      else if(cause == "asteroid"){
+        message = p.nick + " flew into asteroid";
+      }
+      let l = new EventLog(message); 
+      this.logs.push(l);
     }
 
     addBullet(b){

@@ -84,6 +84,20 @@ class MultiplayerSession extends Session {
           i++;
         }
 
+        let x = 380;
+        let y = 20;
+
+        for (let i = this.logs.length - 1; i >= 0; i--) {
+            let l = this.logs[i];
+            if (l.update()) {
+                this.logs.splice(i, 1);
+            }
+            else{
+              l.show(x,y);
+              y += 20;
+            }
+        }
+
         prevTime = currTime;
     }
 
@@ -100,6 +114,22 @@ class MultiplayerSession extends Session {
 
       if(cause[0] == "/")
         this.ships.get(cause).kills++;
+
+      let message;
+      if(cause[0] == "/") {
+        message = this.ships.get(cause).nick + " killed " + this.myShip.nick;
+      }
+      else if(cause == "wall"){
+        message = this.myShip.nick + " smashed into wall";
+      }
+      else if(cause == "comet"){
+        message = this.myShip.nick + " was killed by comet";
+      }
+      else if(cause == "asteroid"){
+        message = this.myShip.nick + " flew into asteroid";
+      }
+      let l = new EventLog(message); 
+      this.logs.push(l);
     }
 
     addBullet(b) {
@@ -130,6 +160,9 @@ function setupSocket() {
           let sh = new Ship(0, 0, data.id, data.n);
           sh.usePseudoPos = true;
           session.ships.set(data.id, sh);
+
+          let l = new EventLog(data.n + " has joined"); 
+          session.logs.push(l);
         }
     );
 
@@ -211,10 +244,31 @@ function setupSocket() {
                 if(data.c == session.myShip.id){
                   session.myShip.kills++;
                 }
-                else if(data.c[0] != "/") {
+                else if(data.c[0] == "/") {
                   session.ships.get(data.c).kills++;
                 }
             }
+
+            print(data.c + " " + data.id);
+
+            let message;
+            if(data.c[0] == "/") {
+              if(data.c == session.myShip.id)
+                message = session.myShip.nick + " killed " + session.ships.get(data.id).nick;
+              else 
+                message = session.ships.get(data.c).nick + " killed " + session.ships.get(data.id).nick;
+            }
+            else if(data.c == "wall"){
+              message = session.ships.get(data.id).nick + " smashed into wall";
+            }
+            else if(data.c == "comet"){
+              message = session.ships.get(data.id).nick + " was killed by comet";
+            }
+            else if(data.c == "asteroid"){
+              message = session.ships.get(data.id).nick + " flew into asteroid";
+            }
+            let l = new EventLog(message); 
+            session.logs.push(l);
         }
     );
 
@@ -224,6 +278,14 @@ function setupSocket() {
             let c = new Comet(data.x, data.y, data.vx, data.vy, data.r);
             c.move(timeDif);
             session.comets.push(c);
+        }
+    );
+
+    socket.on('dis', //disconnected
+        function(data) {
+            let l = new EventLog(session.ships.get(data).nick + " disconnected"); 
+            session.logs.push(l);
+            session.ships.delete(data);
         }
     );
 

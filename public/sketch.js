@@ -50,7 +50,7 @@ function draw() {
 
   if (keyIsDown(ESCAPE)){
     inSession = false;
-    socket = null;
+    if(typeof socket !== 'undefined') socket.disconnect();
     showDOM();
   }
 }

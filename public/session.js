@@ -7,6 +7,8 @@ class Session {
     this.particles = [];
     this.comets = [];
     this.asteroids = [];
+
+    this.logs = [];
   }
     //Methods to override
     update() {
