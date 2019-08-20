@@ -9,6 +9,7 @@ class MultiplayerSession extends Session {
         this.myShip;
 
         setupSocket();
+        this.generateStarfield();
     }
 
     update() {
@@ -18,6 +19,11 @@ class MultiplayerSession extends Session {
         background(0);
         gi++;
 
+        let t = currTime/1000;
+        for (let s of this.stars) {
+          s.show(t);
+        }
+        
         for (let a of this.asteroids) {
             a.show();
         }
@@ -72,7 +78,7 @@ class MultiplayerSession extends Session {
         }
 
         textSize(16);
-        fill(255,255,255,150);
+        fill(255,255,255,255);
         noStroke();
 
         if (typeof this.myShip !== "undefined")
@@ -307,6 +313,9 @@ function setupSocket() {
             }
 
             socket.emit('n', {id: data.id, n: nickInput.value()}); //nick
+
+            noiseSeed(data.starSeed);
+            session.generateStarfield();
         }
     );
 }

@@ -15,19 +15,28 @@ class TwoPlayerSession extends Session{
           let a = new Asteroid(gameMap.xs[i], gameMap.ys[i], gameMap.s[i]);
           this.asteroids.push(a);
         }
+
+        noiseSeed(Math.random()*10000000);
+        this.generateStarfield();
     }
 
     update() {
+        currTime = new Date().getTime();
+        let dt = (currTime - prevTime) / 1000;
+
         background(0);
         gi++;
-
-        let dt = 1.0/60.0;
 
         let r = Math.random();
         if(r < 0.01) {
           let data = sharedModule.generateComet();
           let c = new Comet(data.x, data.y, data.vx, data.vy, data.r);
           this.comets.push(c);
+        }
+
+        let t = currTime/1000;
+        for (let s of this.stars) {
+          s.show(t);
         }
 
         for (let a of this.asteroids) {
@@ -94,6 +103,8 @@ class TwoPlayerSession extends Session{
         noStroke();
         text("Player1 " + this.leftShip.kills + " " + this.leftShip.deaths, 10, 20);
         text("Player2 " + this.rightShip.kills + " " + this.rightShip.deaths, 10, 40);
+
+        prevTime = currTime;
     }
 
     getComets(){

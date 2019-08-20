@@ -8,6 +8,7 @@ sys = require('util');
 
 var gameMap = sharedModule.generateMap();
 var clients = new Map();
+var starSeed = Math.random()*10000000;
 
 // Set up the server
 var server = app.listen(process.env.PORT || 6000, listen);
@@ -41,6 +42,8 @@ io.sockets.on('connection',
       xs: gameMap.xs,
       ys: gameMap.ys,
       s: gameMap.s,
+
+      starSeed: starSeed,
 
       clients: cli
     };
