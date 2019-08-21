@@ -8,9 +8,34 @@ var tpBut;
 var mpBut;
 var nickInput;
 
+var shot;
+var hit;
+var explosion;
+var thrust;
+var spawn;
+var empty;
+var reloaded;
+
+var connected;
+var disconnected;
+
+function preload(){
+  shot = loadSound('assets/shot.wav');
+  hit = loadSound('assets/hit.wav');
+  explosion = loadSound('assets/explosion.wav');
+  thrust = loadSound('assets/thrust.wav');
+  spawn = loadSound('assets/spawn.wav');
+  empty = loadSound('assets/empty.wav');
+  reloaded = loadSound('assets/reloaded.wav');
+
+  connected = loadSound('assets/joined.wav');
+  disconnected = loadSound('assets/left.wav');
+}
+
 function setup() {
   createCanvas(WIDTH, HEIGHT);
   frameRate(60);
+  masterVolume(0.1);
 
   tpBut = createButton('Two player');
   tpBut.style('background-color', 'black');
@@ -50,6 +75,7 @@ function draw() {
 
   if (keyIsDown(ESCAPE)){
     inSession = false;
+    thrust.stop();
     if(typeof socket !== 'undefined') socket.disconnect();
     showDOM();
   }

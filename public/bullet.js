@@ -3,6 +3,7 @@ class Bullet {
     this.pos = createVector(x,y);
     this.vel = createVector(0,400);
     this.vel.rotate(-angle);
+    //this.vel.add(shooter.vel);
 
     this.shooter = shooter;
     this.id = id;
@@ -67,20 +68,19 @@ class Bullet {
 
   show() {
     if(this.usePseudoPos && this.timeToCompensationEnd > 0) {
-      print("pseudo");
-      strokeWeight(5);
+      strokeWeight(4);
       stroke(255,255,0);
       point(this.pPos.x, this.pPos.y);
     }
     else {
-      strokeWeight(5);
+      strokeWeight(4);
       stroke(255,255,0);
       point(this.pos.x, this.pos.y);
     } 
   }
 
   onHit() {
-    let p = new Particle(this.pos.x, this.pos.y, 0, 0, 0, 2, color(255,255,0,255), -20, color(255,255,0,255), 2.5, -2.5/10, 10);
+    let p = new Particle(this.pos.x, this.pos.y, 0, 0, 0, 2, color(255,255,0,255), 255, -20, color(255,255,0,255), 2.5, -2.5/10, 10);
     session.particles.push(p);
   }
 

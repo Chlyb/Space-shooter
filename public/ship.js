@@ -23,6 +23,8 @@ class Ship {
   }
 
   input(method) {
+    if(this.health <= 0) return; 
+
     let verticalInput = 0;
     let horizontalInput = 0;
 
@@ -89,22 +91,12 @@ class Ship {
 
   shot(multiplayer) {
     let b = new Bullet(this.angle, this.pos.x, this.pos.y, this.id, this.ammo);
-    /*
-    if(multiplayer) {
-      var data = {
-        a: this.angle,
-        x: this.pos.x,
-        y: this.pos.y,
-        s: this.id,
-        id: this.ammo,
-        t: currTime
-      };
-      socket.emit('b',data); //bullet
-    }*/
 
     session.addBullet(b);
 
     if(this.ammo == 0){
+      empty.play();
+
       this.ammo = 15;
       this.cooldown = 200;
     }
@@ -156,7 +148,12 @@ class Ship {
 
   update() {
     if(this.cooldown > 0) this.cooldown--;
+
+    if(this.cooldown == 1 && this.health > 0 && this.ammo == 15) reloaded.play();
+
     if(this.cooldown == 0 && this.health == -1) { //respawn
+      spawn.play();
+
       this.health = 3;
       this.pos = Ship.findSpawnpoint();
       let p = new Particle(this.pos.x, this.pos.y, 0, 0, 125, -5, color(0,0,255,255), -100, 15, color(0,0,255,255), 5, -5/20, 20);
@@ -306,6 +303,8 @@ class Ship {
   }
 
   destroyed(original) {
+    explosion.play();
+
     this.health = -1; //flag for being dead
     this.deaths++;
 
@@ -324,10 +323,11 @@ class Ship {
     if(original) {
       this.vel.x = 0;
       this.vel.y = 0;
-
+    
       this.cooldown = 180;
       this.ammo = 10; 
     }
+    this.vi = 0;
   }
 
   hit(){

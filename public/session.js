@@ -2,6 +2,9 @@ var currTime;
 var prevTime = new Date().getTime();
 var gi = 0;
 
+var prevEngineWorking;
+var engineWorking;
+
 class Session {
   constructor() {
     this.particles = [];
@@ -11,6 +14,11 @@ class Session {
     this.stars = [];
 
     this.logs = [];
+
+    prevEngineWorking = 0;
+    engineWorking = 0;
+    thrust.loop();
+    thrust.setVolume(0);
   }
     //Methods to override
     update() {

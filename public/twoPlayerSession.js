@@ -46,6 +46,7 @@ class TwoPlayerSession extends Session{
         for (let i = this.bullets.length - 1; i >= 0; i--) {
             let b = this.bullets[i];
             if (b.update()) {
+                hit.play();
                 b.onHit();
                 this.bullets.splice(i, 1);
             } else {
@@ -104,6 +105,16 @@ class TwoPlayerSession extends Session{
         text("Player1 " + this.leftShip.kills + " " + this.leftShip.deaths, 10, 20);
         text("Player2 " + this.rightShip.kills + " " + this.rightShip.deaths, 10, 40);
 
+        this.engineWorking = 0;
+        if(this.leftShip.vi != 0)
+          this.engineWorking++;
+        if(this.rightShip.vi != 0)
+          this.engineWorking++;
+        if(this.prevEngineWorking != this.engineWorking){
+          thrust.setVolume( Math.log(this.engineWorking+1));
+        }
+        this.prevEngineWorking = this.engineWorking;
+
         prevTime = currTime;
     }
 
@@ -139,10 +150,12 @@ class TwoPlayerSession extends Session{
     }
 
     addBullet(b){
+      shot.play();
       this.bullets.push(b);
     }
 
     removeBullet(b){
+      hit.play();
       let index = this.bullets.indexOf(b);
       if(index !== -1) {
         this.bullets.splice(index, 1);

@@ -13,6 +13,8 @@ class MultiplayerSession extends Session {
     }
 
     update() {
+        if (typeof this.myShip === "undefined") return;
+
         currTime = new Date().getTime();
         let dt = (currTime - prevTime) / 1000;
 
@@ -30,6 +32,8 @@ class MultiplayerSession extends Session {
 
         for (let b of this.bullets.values()) {
             if (b.update()) {
+                hit.play();
+
                 b.onHit();
                 this.bullets.delete(b.shooter + b.id);
             } else {
@@ -38,7 +42,6 @@ class MultiplayerSession extends Session {
             }
         }
 
-        if (typeof this.myShip !== "undefined") {
             let changed = this.myShip.input();
             this.myShip.update();
             this.myShip.move(dt);
@@ -50,7 +53,7 @@ class MultiplayerSession extends Session {
 
             fill(255);
             this.myShip.show();
-        }
+        
 
         for (let sh of this.ships.values()) {
             sh.move(dt);
@@ -81,7 +84,7 @@ class MultiplayerSession extends Session {
         fill(255,255,255,255);
         noStroke();
 
-        if (typeof this.myShip !== "undefined")
+    
           text(this.myShip.nick + " " + this.myShip.kills + " " + this.myShip.deaths, 10, 20);
 
         let i = 0;
@@ -103,6 +106,17 @@ class MultiplayerSession extends Session {
               y += 20;
             }
         }
+
+        this.engineWorking = 0;
+        if(this.myShip.vi != 0)
+          this.engineWorking++;
+        for(let s of this.ships.values()){
+          if(s.vi != 0) this.engineWorking++;
+        }
+        if(this.prevEngineWorking != this.engineWorking){
+          thrust.setVolume( Math.log(this.engineWorking+1));
+        }
+        this.prevEngineWorking = this.engineWorking;
 
         prevTime = currTime;
     }
@@ -139,6 +153,8 @@ class MultiplayerSession extends Session {
     }
 
     addBullet(b) {
+        shot.play();
+
         var data = {
             a: this.myShip.angle,
             x: this.myShip.pos.x,
@@ -153,6 +169,8 @@ class MultiplayerSession extends Session {
     }
 
     removeBullet(b) { //on player hit
+        hit.play();
+
         this.myShip.sendHit(b);
         session.bullets.delete(b.shooter + b.id);
     }
@@ -163,6 +181,8 @@ function setupSocket() {
 
     socket.on('n', //nick
         function(data) {
+          connected.play();
+
           let sh = new Ship(0, 0, data.id, data.n);
           sh.usePseudoPos = true;
           session.ships.set(data.id, sh);
@@ -189,6 +209,8 @@ function setupSocket() {
             sh.timeToCompensationEnd = 0.1;
 
             if(sh.health == -1){
+              spawn.play();
+
               sh.health = 3; 
               let p = new Particle(sh.pos.x, sh.pos.y, 0, 0, 125, -5, color(0,0,255,255), -100, 15, color(0,0,255,255), 5, -5/20, 20);
               session.particles.push(p);
@@ -200,6 +222,8 @@ function setupSocket() {
 
     socket.on('b', //bullet
         function(data) {
+            shot.play();
+
             let b = new Bullet(data.a, data.x, data.y, data.s, data.id);
             session.bullets.set(data.s + data.id, b);
 
@@ -232,6 +256,8 @@ function setupSocket() {
 
     socket.on('h', //hit
         function(data) {
+            hit.play();
+            
             let sh = session.ships.get(data.h);
             sh.hit();
             session.bullets.delete(data.s + data.id);
@@ -289,6 +315,8 @@ function setupSocket() {
 
     socket.on('dis', //disconnected
         function(data) {
+            disconnected.play();
+
             let l = new EventLog(session.ships.get(data).nick + " disconnected"); 
             session.logs.push(l);
             session.ships.delete(data);
