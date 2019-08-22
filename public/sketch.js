@@ -19,6 +19,8 @@ var reloaded;
 var connected;
 var disconnected;
 
+var graphics; 
+
 function preload(){
   shot = loadSound('assets/shot.wav');
   hit = loadSound('assets/hit.wav');
@@ -33,44 +35,52 @@ function preload(){
 }
 
 function setup() {
-  createCanvas(WIDTH, HEIGHT);
+  createCanvas(windowWidth - 10, windowHeight - 20);
   frameRate(60);
   masterVolume(0.1);
+
+  graphics = createGraphics(WIDTH, HEIGHT);
+  screenHeight = windowHeight - 20;
+  screenWidth = screenHeight * WIDTH / HEIGHT;
 
   tpBut = createButton('Two player');
   tpBut.style('background-color', 'black');
   tpBut.style('color', 'white');
-  tpBut.style('font-size', '32px');
-  tpBut.position(230, 150);
+  tpBut.style('font-size', '48px');
+  tpBut.position(width/2 - 75, 250);
   tpBut.mousePressed(tpButFun);
 
   mpBut = createButton('Multiplayer');
   mpBut.style('background-color', 'black');
   mpBut.style('color', 'white');
-  mpBut.style('font-size', '32px');
-  mpBut.position(230, 220);
+  mpBut.style('font-size', '48px');
+  mpBut.position(width/2 - 75, 350);
   mpBut.mousePressed(mpButFun);
   mpBut.style('background-color', 'black');
 
   nickInput = createInput('Player');
-  nickInput.position(280, 120);
+  nickInput.position(width/2 , 175);
+  nickInput.attribute('maxLength','10');
   nickInput.style('background-color', 'black');
   nickInput.style('color', 'white');
-  nickInput.style('font-size', '18px');
-  nickInput.size(115);
+  nickInput.style('font-size', '32px');
+  nickInput.size(170);
 }
 
 function draw() {
   if(inSession){
+    background(0);
     session.update();
   }
   else{
     background(0);
-    textSize(64);
+    textAlign(CENTER);
+    textSize(100);
     fill('white');
-    text('Space shooter', 100, 100);
-    textSize(18);
-    text('Nick: ', 225, 130);
+    text('Space shooter', width/2, 100);
+    textAlign(LEFT);
+    textSize(32);
+    text('Nick: ', width/2 - 80, 200);
   }
 
   if (keyIsDown(ESCAPE)){

@@ -17,9 +17,14 @@ class MultiplayerSession extends Session {
 
         currTime = new Date().getTime();
         let dt = (currTime - prevTime) / 1000;
+        gi++;
 
         background(0);
-        gi++;
+
+        graphics.fill(0);
+        graphics.stroke(255);
+        graphics.strokeWeight(5);
+        graphics.rect(0,0,WIDTH,HEIGHT);
 
         let t = currTime/1000;
         for (let s of this.stars) {
@@ -51,13 +56,13 @@ class MultiplayerSession extends Session {
                 this.myShip.sendData();
             }
 
-            fill(255);
+            graphics.fill(255);
             this.myShip.show();
         
 
         for (let sh of this.ships.values()) {
             sh.move(dt);
-            fill(0, 255, 255, 255);
+            graphics.fill(0, 255, 255, 255);
             sh.show();
         }
 
@@ -80,12 +85,16 @@ class MultiplayerSession extends Session {
             }
         }
 
+        image(graphics, (width - screenWidth)/2,0, screenWidth, screenHeight);
+
         textSize(16);
         fill(255,255,255,255);
-        noStroke();
-
+        textSize(16);
+        stroke(0);
+        strokeWeight(6);
+        textAlign(LEFT);
     
-          text(this.myShip.nick + " " + this.myShip.kills + " " + this.myShip.deaths, 10, 20);
+        text(this.myShip.nick + " " + this.myShip.kills + " " + this.myShip.deaths, 10, 20);
 
         let i = 0;
         for (let sh of this.ships.values()){
@@ -93,8 +102,10 @@ class MultiplayerSession extends Session {
           i++;
         }
 
-        let x = 380;
+        let x = width - 20;
         let y = 20;
+
+        textAlign(RIGHT);
 
         for (let i = this.logs.length - 1; i >= 0; i--) {
             let l = this.logs[i];

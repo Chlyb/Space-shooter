@@ -24,13 +24,13 @@ class Asteroid {
   }
 
   show() {
-    fill(50);
-    stroke(30);
-    strokeWeight(3);
-    beginShape();
+    graphics.fill(50);
+    graphics.stroke(30);
+    graphics.strokeWeight(3);
+    graphics.beginShape();
     for(let i = 0; i < this.xs.length; i++) {
-      vertex( this.xs[i], this.ys[i]);
+      graphics.vertex( this.xs[i], this.ys[i]);
     }
-    endShape(CLOSE);
+    graphics.endShape(CLOSE);
   }
 }

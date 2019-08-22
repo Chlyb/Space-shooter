@@ -12,7 +12,8 @@ class EventLog {
 
   show(x, y){
     textSize(16);
-    noStroke();
+    stroke(0);
+    strokeWeight(6);
     if(this.life < 540)
       fill(255,255,255,255);
     else

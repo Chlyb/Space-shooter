@@ -42,15 +42,15 @@ class Comet {
   }
 
   show() {
-    fill(80);
-    stroke(60);
-    strokeWeight(3);
-    translate(this.x, this.y);
-    beginShape();
+    graphics.fill(80);
+    graphics.stroke(60);
+    graphics.strokeWeight(3);
+    graphics.translate(this.x, this.y);
+    graphics.beginShape();
     for(let i = 0; i < this.xs.length; i++) {
-      vertex( this.xs[i], this.ys[i]);
+      graphics.vertex( this.xs[i], this.ys[i]);
     }
-    endShape(CLOSE);
-    translate(-this.x, -this.y);
+    graphics.endShape(CLOSE);
+    graphics.translate(-this.x, -this.y);
   }
 }

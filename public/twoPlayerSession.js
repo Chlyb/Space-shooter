@@ -23,9 +23,14 @@ class TwoPlayerSession extends Session{
     update() {
         currTime = new Date().getTime();
         let dt = (currTime - prevTime) / 1000;
-
-        background(0);
         gi++;
+        
+        background(0);
+
+        graphics.fill(0);
+        graphics.stroke(255);
+        graphics.strokeWeight(5);
+        graphics.rect(0,0,WIDTH,HEIGHT);  
 
         let r = Math.random();
         if(r < 0.01) {
@@ -62,7 +67,7 @@ class TwoPlayerSession extends Session{
         this.leftShip.move(dt);
         this.rightShip.move(dt);   
 
-        fill(255);
+        graphics.fill(255);
         this.leftShip.show();
         this.rightShip.show();
 
@@ -84,8 +89,10 @@ class TwoPlayerSession extends Session{
                 this.particles.splice(i, 1);
             }
         }
+        image(graphics, (width - screenWidth)/2,0, screenWidth, screenHeight);
 
-        let x = 380;
+        textAlign(RIGHT);
+        let x = width - 20;
         let y = 20;
 
         for (let i = this.logs.length - 1; i >= 0; i--) {
@@ -101,7 +108,11 @@ class TwoPlayerSession extends Session{
 
         textSize(16);
         fill(255,255,255,255);
-        noStroke();
+        textSize(16);
+        stroke(0);
+        strokeWeight(6);
+        textAlign(LEFT);
+
         text("Player1 " + this.leftShip.kills + " " + this.leftShip.deaths, 10, 20);
         text("Player2 " + this.rightShip.kills + " " + this.rightShip.deaths, 10, 40);
 

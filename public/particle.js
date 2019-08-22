@@ -31,10 +31,10 @@ class Particle {
   }
 
   show() {
-    strokeWeight(this.strokeWeight);
-    stroke(this.stroke);
-    fill(this.fill);
+    graphics.strokeWeight(this.strokeWeight);
+    graphics.stroke(this.stroke);
+    graphics.fill(this.fill);
 
-    ellipse(this.x, this.y, this.r, this.r);
+    graphics.ellipse(this.x, this.y, this.r, this.r);
   }
 }

@@ -234,7 +234,7 @@ class Ship {
   show() {
     if(this.health < 0) return;
 
-    noStroke();
+    graphics.noStroke();
 
     if(this.usePseudoPos){
       var sin = Math.sin(this.pAngle);
@@ -247,12 +247,12 @@ class Ship {
     }
 
     if(this.usePseudoPos && this.timeToCompensationEnd > 0) {
-      triangle(this.pPos.x + 6 * sin, this.pPos.y + 6 * cos,
+      graphics.triangle(this.pPos.x + 6 * sin, this.pPos.y + 6 * cos,
       this.pPos.x - 4 * cos -4*sin, this.pPos.y + 4 * sin - 4*cos,
       this.pPos.x + 4 * cos -4*sin, this.pPos.y - 4 * sin - 4*cos);
     }
     else {
-      triangle(this.pos.x + 6 * sin, this.pos.y + 6 * cos,
+      graphics.triangle(this.pos.x + 6 * sin, this.pos.y + 6 * cos,
       this.pos.x - 4 * cos -4*sin, this.pos.y + 4 * sin - 4*cos,
       this.pos.x + 4 * cos -4*sin, this.pos.y - 4 * sin - 4*cos);
     }

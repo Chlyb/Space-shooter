@@ -8,8 +8,8 @@ class Star {
   }
 
   show(t) {
-    stroke(255);
-    strokeWeight(3 * this.size * (1 + cos(t*this.w*5 + this.a*10)/2));
-    point(this.x, this.y);
+    graphics.stroke(255);
+    graphics.strokeWeight(3 * this.size * (1 + cos(t*this.w*5 + this.a*10)/2));
+    graphics.point(this.x, this.y);
   }
 }

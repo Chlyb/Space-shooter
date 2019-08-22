@@ -1,12 +1,12 @@
 (function(exports){
-  var WIDTH = 600;
-  var HEIGHT = 400;
+  var WIDTH = 1400;
+  var HEIGHT = 1080;
 
   exports.WIDTH = WIDTH;
   exports.HEIGHT = HEIGHT;
 
   exports.generateMap = function(){
-  var n = Math.random()*3 + 2; 
+  var n = Math.random()*4 + 10; 
   var xs = [];
   var ys = [];
   var seeds = [];

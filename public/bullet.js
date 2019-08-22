@@ -68,14 +68,14 @@ class Bullet {
 
   show() {
     if(this.usePseudoPos && this.timeToCompensationEnd > 0) {
-      strokeWeight(4);
-      stroke(255,255,0);
-      point(this.pPos.x, this.pPos.y);
+      graphics.strokeWeight(4);
+      graphics.stroke(255,255,0);
+      graphics.point(this.pPos.x, this.pPos.y);
     }
     else {
-      strokeWeight(4);
-      stroke(255,255,0);
-      point(this.pos.x, this.pos.y);
+      graphics.strokeWeight(4);
+      graphics.stroke(255,255,0);
+      graphics.point(this.pos.x, this.pos.y);
     } 
   }
 
