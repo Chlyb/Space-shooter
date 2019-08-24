@@ -8,6 +8,7 @@ sys = require('util');
 
 var gameMap = sharedModule.generateMap();
 var clients = new Map();
+var latencies = new Map();
 var starSeed = Math.random()*10000000;
 
 // Set up the server
@@ -21,7 +22,7 @@ function listen() {
 }
 
 app.use(express.static('public'));
-var io = require('socket.io')(server);
+var io = require('socket.io')(server, {pingInterval: 1000})
 
 // Register a callback function to run when we have an individual connection
 // This is run for each individual user that connects
@@ -56,6 +57,7 @@ io.sockets.on('connection',
       deaths: 0
     };
     clients.set(socket.id, client);
+    latencies.set(socket.id, 0);
 
     socket.on('n', //nick
       function(data) {
@@ -93,6 +95,12 @@ io.sockets.on('connection',
       }
     );
 
+    socket.on('l', //latency
+      function(ms) {
+        latencies.set(socket.id, ms);
+      }
+    );
+
     socket.on('disconnect', function() {
       socket.broadcast.emit('dis', socket.id);  
       console.log("Client has disconnected");
@@ -114,7 +122,8 @@ function update() {
       vx: c.vx,
       vy: c.vy,
       r: c.r,
-      t: new Date().getTime()
+      //t: new Date().getTime()
+      t: Date.now()
     };
     io.emit('c', data); //comet
   }

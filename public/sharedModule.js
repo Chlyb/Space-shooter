@@ -1,6 +1,6 @@
 (function(exports){
   var WIDTH = 1400;
-  var HEIGHT = 1080;
+  var HEIGHT = 868;
 
   exports.WIDTH = WIDTH;
   exports.HEIGHT = HEIGHT;
