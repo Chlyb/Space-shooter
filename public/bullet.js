@@ -21,6 +21,8 @@ class Bullet {
     if(this.pos.y < 0) return true;
 
     for(let a of session.asteroids) {
+      if( (a.x - this.pos.x)**2 + (a.y - this.pos.y)**2 > a.maxR*a.maxR) continue;
+
       noiseSeed( a.seed);
       let v = this.pos.copy();
       v.sub(a.x, a.y);

@@ -15,8 +15,8 @@ class TwoPlayerSession extends Session{
           let a = new Asteroid(gameMap.xs[i], gameMap.ys[i], gameMap.s[i]);
           this.asteroids.push(a);
         }
-
-        noiseSeed(Math.random()*10000000);
+        let starSeed = Math.random()*10000000;
+        noiseSeed(starSeed);
         this.generateStarfield();
     }
 
@@ -40,9 +40,10 @@ class TwoPlayerSession extends Session{
         }
 
         let t = currTime/1000;
-        for (let s of this.stars) {
-          s.show(t);
-        }
+
+        if(starsBox.checked())
+          for (let s of this.stars) 
+            s.show(t);
 
         for (let a of this.asteroids) {
             a.show();
@@ -89,10 +90,10 @@ class TwoPlayerSession extends Session{
                 this.particles.splice(i, 1);
             }
         }
-        image(graphics, (width - screenWidth)/2,0, screenWidth, screenHeight);
+        image(graphics, (windowWidth - windowHeight*WIDTH/HEIGHT)/2,0, windowHeight*WIDTH/HEIGHT, windowHeight);
 
         textAlign(RIGHT);
-        let x = width - 20;
+        let x = windowWidth - 20;
         let y = 20;
 
         for (let i = this.logs.length - 1; i >= 0; i--) {

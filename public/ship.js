@@ -6,7 +6,7 @@ class Ship {
 
     this.cooldown = 0;
     this.ammo = 10;
-    this.health = Number.NEGATIVE_INFINITY;
+    this.health = -1;
 
     this.hi = 0;
     this.vi = 0;
@@ -147,138 +147,22 @@ class Ship {
   }
 
   update() {
-      print(this.cooldown + " " + this.health);
-      if(this.cooldown > 0) this.cooldown--;
+    if(this.cooldown > 0) this.cooldown--;
 
-      if(this.cooldown == 1 && this.health > 0 && this.ammo == 15) reloaded.play();
+    if(this.cooldown == 1 && this.health > 0 && this.ammo == 15) reloaded.play();
 
-      if(this.cooldown == 0 && this.health == Number.NEGATIVE_INFINITY) { //respawn
-        spawn.play();
+    if(this.cooldown == 0 && this.health == -1) { //respawn
+      spawn.play();
 
-        this.health = 3;
-        this.pos = Ship.findSpawnpoint();
-        let p = new Particle(this.pos.x, this.pos.y, 0, 0, 125, -5, color(0,0,255,255), -100, 15, color(0,0,255,255), 5, -5/20, 20);
-        session.particles.push(p);
-      }
-      if(this.health <= 0) return;
-
-     let deathCause = this.checkCollisions();
-  
-    if(deathCause != "") {
-      session.playerDestroyed(this, deathCause);
-      this.destroyed(true);
-    }
-  }
-
-  show() {
-    if(this.health < 0) return;
-
-    graphics.noStroke();
-
-    if(this.usePseudoPos){
-      var sin = Math.sin(this.pAngle);
-      var cos = Math.cos(this.pAngle);
-
-    }
-    else {
-      var sin = Math.sin(this.angle);
-      var cos = Math.cos(this.angle);
-    }
-
-    if(this.usePseudoPos && this.timeToCompensationEnd > 0) {
-      graphics.triangle(this.pPos.x + 6 * sin, this.pPos.y + 6 * cos,
-      this.pPos.x - 4 * cos -4*sin, this.pPos.y + 4 * sin - 4*cos,
-      this.pPos.x + 4 * cos -4*sin, this.pPos.y - 4 * sin - 4*cos);
-    }
-    else {
-      graphics.triangle(this.pos.x + 6 * sin, this.pos.y + 6 * cos,
-      this.pos.x - 4 * cos -4*sin, this.pos.y + 4 * sin - 4*cos,
-      this.pos.x + 4 * cos -4*sin, this.pos.y - 4 * sin - 4*cos);
-    }
-  }
-
-  serverUpdate(data) {
-    this.angle = data.a;
-    this.pos.x = data.x;
-    this.pos.y = data.y;
-    this.vel.x = data.vx;
-    this.vel.y = data.vy;
-    this.hi = data.hi;
-    this.vi = data.vi;
-  }
-
-  sendData() {
-    var data = {
-      a: this.angle,
-      x: this.pos.x,
-      y: this.pos.y,
-      vx: this.vel.x,
-      vy: this.vel.y,
-      id: this.id,
-      //time: currTime,
-      time: latency,
-      vi: this.vi,
-      hi: this.hi
-    };
-    socket.emit('p',data);
-  }
-
-  sendHit(b) {
-    var data = {
-      h: this.id,
-      s: b.shooter,
-      id: b.id
-    };
-    socket.emit('h',data); //hit
-  }
-
-  sendDestroyed(cause) {
-    var data = {
-      id: this.id,
-      x: this.pos.x,
-      y: this.pos.y,
-      c: cause
-    };
-    socket.emit('d',data); //destoyed
-  }
-
-  destroyed(original) {
-    explosion.play();
-
-    this.health = Number.NEGATIVE_INFINITY; //flag for being dead
-    this.deaths++;
-
-    let p = new Particle(this.pos.x, this.pos.y, 0, 0, 5, 5, color(255,255,0,255), 255, -20, color(255,255,0,255), 5, -5/20, 20);
-    session.particles.push(p);
-
-    for(let i = 0; i < 30; ++i) {
-      let v= p5.Vector.random2D();
-      v.mult(Math.random()*300);
-      v.add(this.vel);
-
-      let p = new Particle(this.pos.x, this.pos.y, v.x, v.y, 0, 0, color(0,0,0,255), 255, 0, color(255,255,255,255), 5, -5/40, 40);
+      this.health = 3;
+      this.pos = Ship.findSpawnpoint();
+      let p = new Particle(this.pos.x, this.pos.y, 0, 0, 125, -5, color(0,0,255,255), -100, 15, color(0,0,255,255), 5, -5/20, 20);
       session.particles.push(p);
     }
+    if(this.health <= 0) return;
 
-    if(original) {
-      this.vel.x = 0;
-      this.vel.y = 0;
-    
-      this.cooldown = 180;
-      this.ammo = 10; 
-    }
-    this.vi = 0;
-  }
-
-  hit(){
-    let p = new Particle(this.pos.x, this.pos.y, 0, 0, 0, 2, color(255,255,0,255), 255, -20, color(255,255,0,255), 2.5, -2.5/10, 10);
-    session.particles.push(p);
-    this.health--;
-  }
-
-  checkCollisions(){
     let destroyed = false;
-    let deathCause = "";
+    let deathCause;
 
     if(this.pos.x < 0){
       destroyed = true;
@@ -298,6 +182,7 @@ class Ship {
     }
 
     for(let a of session.asteroids) {
+      if( (a.x - this.pos.x)**2 + (a.y - this.pos.y)**2 > a.maxR*a.maxR) continue;
       noiseSeed( a.seed);
 
       let v = this.pos.copy();
@@ -341,7 +226,114 @@ class Ship {
       }
     }
 
-    return deathCause;
+    if(destroyed) {
+      session.playerDestroyed(this, deathCause);
+      this.destroyed(true);
+    }
+  }
+
+  show() {
+    if(this.health < 0) return;
+
+    graphics.noStroke();
+
+    if(this.usePseudoPos){
+      var sin = Math.sin(this.pAngle);
+      var cos = Math.cos(this.pAngle);
+    }
+    else {
+      var sin = Math.sin(this.angle);
+      var cos = Math.cos(this.angle);
+    }
+
+    if(this.usePseudoPos && this.timeToCompensationEnd > 0) {
+      graphics.triangle(this.pPos.x + 6 * sin, this.pPos.y + 6 * cos,
+      this.pPos.x - 4 * cos -4*sin, this.pPos.y + 4 * sin - 4*cos,
+      this.pPos.x + 4 * cos -4*sin, this.pPos.y - 4 * sin - 4*cos);
+    }
+    else {
+      graphics.triangle(this.pos.x + 6 * sin, this.pos.y + 6 * cos,
+      this.pos.x - 4 * cos -4*sin, this.pos.y + 4 * sin - 4*cos,
+      this.pos.x + 4 * cos -4*sin, this.pos.y - 4 * sin - 4*cos);
+    }
+  }
+
+  serverUpdate(data) {
+    this.angle = data.a;
+    this.pos.x = data.x;
+    this.pos.y = data.y;
+    this.vel.x = data.vx;
+    this.vel.y = data.vy;
+    this.hi = data.hi;
+    this.vi = data.vi;
+  }
+
+  sendData() {
+    var data = {
+      a: this.angle,
+      x: this.pos.x,
+      y: this.pos.y,
+      vx: this.vel.x,
+      vy: this.vel.y,
+      id: this.id,
+      time: currTime,
+      vi: this.vi,
+      hi: this.hi
+    };
+    socket.emit('p',data);
+  }
+
+  sendHit(b) {
+    var data = {
+      h: this.id,
+      s: b.shooter,
+      id: b.id
+    };
+    socket.emit('h',data); //hit
+  }
+
+  sendDestroyed(cause) {
+    var data = {
+      id: this.id,
+      x: this.pos.x,
+      y: this.pos.y,
+      c: cause
+    };
+    socket.emit('d',data); //destoyed
+  }
+
+  destroyed(original) {
+    explosion.play();
+
+    this.health = -1; //flag for being dead
+    this.deaths++;
+
+    let p = new Particle(this.pos.x, this.pos.y, 0, 0, 5, 5, color(255,255,0,255), 255, -20, color(255,255,0,255), 5, -5/20, 20);
+    session.particles.push(p);
+
+    for(let i = 0; i < 30; ++i) {
+      let v= p5.Vector.random2D();
+      v.mult(Math.random()*300);
+      v.add(this.vel);
+
+      let p = new Particle(this.pos.x, this.pos.y, v.x, v.y, 0, 0, color(0,0,0,255), 255, 0, color(255,255,255,255), 5, -5/40, 40);
+      session.particles.push(p);
+    }
+
+    if(original) {
+      this.vel.x = 0;
+      this.vel.y = 0;
+    
+      this.cooldown = 180;
+      this.ammo = 10; 
+    }
+    this.vi = 0;
+  }
+
+  hit(){
+    let p = new Particle(this.pos.x, this.pos.y, 0, 0, 0, 2, color(255,255,0,255), 255, -20, color(255,255,0,255), 2.5, -2.5/10, 10);
+    session.particles.push(p);
+    this.health--;
   }
 
   static findSpawnpoint(){

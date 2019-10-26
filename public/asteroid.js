@@ -7,6 +7,8 @@ class Asteroid {
     this.xs = [];
     this.ys = [];
 
+    this.maxR = 0;
+
     let xoff;
     let yoff;
     let r;
@@ -18,6 +20,8 @@ class Asteroid {
       xoff = map(Math.cos(angle),-1,1,0,1.5);
       yoff = map(Math.sin(angle),-1,1,0,1.5);
       r = map(noise(xoff, yoff), 0,1,20,100);
+      if(r > this.maxR)
+        this.maxR = r;
       this.xs.push(x + Math.cos(angle)*r);
       this.ys.push(y + Math.sin(angle)*r);
     }

@@ -1,5 +1,4 @@
 var socket;
-var latency = 0;
 
 class MultiplayerSession extends Session {
     constructor() {
@@ -10,15 +9,12 @@ class MultiplayerSession extends Session {
         this.myShip;
 
         setupSocket();
-        this.generateStarfield();
     }
 
     update() {
         if (typeof this.myShip === "undefined") return;
 
-        //currTime = new Date().getTime();
-        currTime = Date.now();
-      
+        currTime = new Date().getTime();
         let dt = (currTime - prevTime) / 1000;
         gi++;
 
@@ -30,9 +26,10 @@ class MultiplayerSession extends Session {
         graphics.rect(0,0,WIDTH,HEIGHT);
 
         let t = currTime/1000;
-        for (let s of this.stars) {
-          s.show(t);
-        }
+        
+        if(starsBox.checked())
+          for (let s of this.stars) 
+            s.show(t);
         
         for (let a of this.asteroids) {
             a.show();
@@ -61,6 +58,7 @@ class MultiplayerSession extends Session {
 
             graphics.fill(255);
             this.myShip.show();
+        
 
         for (let sh of this.ships.values()) {
             sh.move(dt);
@@ -86,8 +84,7 @@ class MultiplayerSession extends Session {
                 this.particles.splice(i, 1);
             }
         }
-
-        image(graphics, (width - screenWidth)/2,0, screenWidth, screenHeight);
+        image(graphics, (windowWidth - windowHeight*WIDTH/HEIGHT)/2,0, windowHeight*WIDTH/HEIGHT, windowHeight);
 
         textSize(16);
         fill(255,255,255,255);
@@ -174,8 +171,7 @@ class MultiplayerSession extends Session {
             y: this.myShip.pos.y,
             s: this.myShip.id,
             id: this.myShip.ammo,
-            //t: currTime
-            t: latency
+            t: currTime
         };
         socket.emit('b', data); //bullet
 
@@ -210,7 +206,7 @@ function setupSocket() {
         function(data) {
             let sh = session.ships.get(data.id);
 
-            let timeDif = (latency+data.time)/1000;
+            let timeDif = (currTime - data.time) / 1000;
 
             sh.pPos = sh.pos.copy();
 
@@ -222,7 +218,7 @@ function setupSocket() {
             sh.pVel.div(0.1);
             sh.timeToCompensationEnd = 0.1;
 
-            if(sh.health == Number.NEGATIVE_INFINITY){
+            if(sh.health == -1){
               spawn.play();
 
               sh.health = 3; 
@@ -241,10 +237,9 @@ function setupSocket() {
             let b = new Bullet(data.a, data.x, data.y, data.s, data.id);
             session.bullets.set(data.s + data.id, b);
 
-            let timeDif = (data.t + latency)/1000;
+            let timeDif = (currTime - data.t) / 1000;
 
             session.myShip.move(-timeDif);
-  
             let hit = false;
 
             while (timeDif > 0 && !hit) {
@@ -253,36 +248,19 @@ function setupSocket() {
                 if (timeDif < 0) dt = timeDif + 0.01666;
 
                 b.move(dt);
-
-                if(session.myShip.health != Number.NEGATIVE_INFINITY) {
-                  session.myShip.move(dt);
-                  let d = session.myShip.pos.copy();
-                  d.sub(b.pos);
-                  if(d.magSq() < 150) {
-                    hit = true;
-                    session.myShip.hit();
-                    session.removeBullet(b);
-
-                    if(session.myShip.health == 0) {
-                      session.playerDestroyed(this, b.shooter);
-                      session.myShip.destroyed(true);
-                    }
-                  }
-                }
+                session.myShip.move(dt);
+                session.myShip.update();
 
                 if (b.update()) {
-                  hit = true;
+                    hit = true;
                 }
             }
-
-            if(!hit) {
-              b.usePseudoPos = true;
-              b.pPos = session.ships.get(data.s).pos.copy();
-              b.pVel = b.pos.copy();
-              b.pVel.sub(b.pPos);
-              b.pVel.div(0.1);
-              b.timeToCompensationEnd = 0.1;
-            }
+            b.usePseudoPos = true;
+            b.pPos = session.ships.get(data.s).pos.copy();
+            b.pVel = b.pos.copy();
+            b.pVel.sub(b.pPos);
+            b.pVel.div(0.1);
+            b.timeToCompensationEnd = 0.1;
         }
     );
 
@@ -303,7 +281,7 @@ function setupSocket() {
                 sh.pos.x = data.x;
                 sh.pos.y = data.y;
                 sh.destroyed(false);
-                sh.health = Number.NEGATIVE_INFINITY;
+                sh.health = -1;
 
                 if(data.c == session.myShip.id){
                   session.myShip.kills++;
@@ -338,7 +316,7 @@ function setupSocket() {
 
     socket.on('c', //comet
         function(data) {
-            let timeDif = latency/1000;
+            let timeDif = (currTime - data.t) / 1000;
             let c = new Comet(data.x, data.y, data.vx, data.vy, data.r);
             c.move(timeDif);
             session.comets.push(c);
@@ -354,11 +332,6 @@ function setupSocket() {
             session.ships.delete(data);
         }
     );
-
-    socket.on('pong', function(ms) {
-      latency = ms/2;
-      socket.emit('l', latency); //latency
-    });
 
     //called once we connect
     socket.on('connected',
@@ -379,7 +352,7 @@ function setupSocket() {
 
             socket.emit('n', {id: data.id, n: nickInput.value()}); //nick
 
-            noiseSeed(data.starSeed);
+            noiseSeed(data.starSeed);         
             session.generateStarfield();
         }
     );
